@@ -46,3 +46,4 @@ Create a more detailed document to:
 - all unit-test cases.
 
 ### Prompt 8
+File ./prompt-detail-design.md
