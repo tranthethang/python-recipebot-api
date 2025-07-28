@@ -5,7 +5,8 @@ An AI-powered FastAPI application that generates recipe recommendations from ing
 ## Features
 
 - **Recipe Generation**: Generate recipes from a list of ingredients with quantities
-- **Input Validation**: Comprehensive validation of ingredient formats and quantities
+- **Multi-Unit Support**: Supports 33+ measurement units including mass (kg, g, lb, oz) and capacity (l, ml, cups, tbsp, tsp)
+- **Input Validation**: Comprehensive validation of ingredient formats and quantities with intelligent unit recognition
 - **AI Integration**: Uses OpenRouter API for intelligent recipe generation
 - **Error Handling**: Robust error handling with detailed error messages
 - **Health Monitoring**: Health check endpoint for service monitoring
@@ -143,11 +144,19 @@ OPENROUTER_API_KEY=your_openrouter_api_key_here
 
 ### Starting the Server
 
+**Make sure to activate the virtual environment first:**
+
 ```bash
-# Development server
+# Activate virtual environment
+source venv/bin/activate  # On Windows: venv\Scripts\activate
+
+# Development server (with auto-reload)
 uvicorn app.main:app --reload --host 0.0.0.0 --port 8000
 
-# Production server
+# Alternative: using the virtual environment directly
+./venv/bin/uvicorn app.main:app --reload --host 0.0.0.0 --port 8000
+
+# Production server (without auto-reload)
 uvicorn app.main:app --host 0.0.0.0 --port 8000
 ```
 
@@ -183,9 +192,11 @@ POST /api/recipe
 {
   "ingredients": [
     "2kg pork shoulder",
-    "1kg potatoes",
+    "1kg potatoes", 
     "500g onions",
-    "3 cloves garlic"
+    "2 tbsp olive oil",
+    "1 tsp salt",
+    "500ml chicken broth"
   ]
 }
 ```
@@ -200,13 +211,16 @@ POST /api/recipe
       "2kg pork shoulder",
       "1kg potatoes",
       "500g onions",
-      "3 cloves garlic"
+      "2 tbsp olive oil",
+      "1 tsp salt",
+      "500ml chicken broth"
     ],
     "instructions": [
       "Cut pork shoulder into chunks",
       "Dice potatoes and onions",
-      "Brown the pork in a large pot",
-      "Add vegetables and simmer for 45 minutes"
+      "Heat olive oil in a large pot",
+      "Brown the pork in the pot",
+      "Add vegetables and broth, simmer for 45 minutes"
     ],
     "cooking_time": "45 minutes"
   }
@@ -226,26 +240,57 @@ POST /api/recipe
 ### Input Validation
 
 The API validates:
-- **Ingredient format**: Each ingredient must include a quantity (numbers)
+- **Ingredient format**: Each ingredient must include a quantity (numbers) and a supported unit
 - **List size**: 1-20 ingredients maximum
 - **Content**: Non-empty strings only
+- **Unit recognition**: Supports 33+ measurement units for mass and capacity
 
-**Valid ingredients**:
-- `"2kg pork"`
-- `"500g flour"`
-- `"3 large eggs"`
-- `"1 cup milk"`
+#### Supported Units
+
+**Mass Units (12 units)**:
+- **Metric**: `kg`, `kilogram`, `kilograms`, `g`, `gram`, `grams`
+- **Imperial**: `lb`, `pound`, `pounds`, `oz`, `ounce`, `ounces`
+
+**Capacity Units (21 units)**:
+- **Metric**: `l`, `liter`, `liters`, `litre`, `litres`, `ml`, `milliliter`, `milliliters`, `millilitre`, `millilitres`
+- **Imperial**: `fl oz`, `fluid ounce`, `fluid ounces`
+- **Cooking**: `cup`, `cups`, `tbsp`, `tablespoon`, `tablespoons`, `tsp`, `teaspoon`, `teaspoons`
+
+#### Valid Ingredient Examples
+
+**Mass measurements**:
+- `"2kg pork"` - kilograms
+- `"500g flour"` - grams  
+- `"1lb beef"` - pounds
+- `"8oz cheese"` - ounces
+- `"2.5 kilograms potatoes"` - long form with decimals
+
+**Capacity measurements**:
+- `"2l milk"` - liters
+- `"500ml water"` - milliliters
+- `"1 cup sugar"` - cups (with space)
+- `"2 tbsp olive oil"` - tablespoons
+- `"1 tsp salt"` - teaspoons
+- `"16 fl oz broth"` - fluid ounces
+- `"250 milliliters cream"` - long form
 
 **Invalid ingredients**:
 - `"pork"` (no quantity)
+- `"2 invalid_unit meat"` (unsupported unit)
 - `""` (empty string)
 - `"   "` (whitespace only)
+- `"2 pork"` (no unit specified)
 
 ## Testing
 
 ### Running Tests
 
+**Make sure to activate the virtual environment first:**
+
 ```bash
+# Activate virtual environment
+source venv/bin/activate  # On Windows: venv\Scripts\activate
+
 # Run all tests
 pytest
 
@@ -253,19 +298,83 @@ pytest
 pytest --cov=app
 
 # Run specific test file
-pytest tests/test_recipe_generator.py
+pytest tests/test_ingredient_validator.py
 
 # Run with verbose output
 pytest -v
+
+# Alternative: using the virtual environment directly
+./venv/bin/pytest tests/ -v
+
+# Run tests for new units functionality specifically
+./venv/bin/pytest tests/test_ingredient_validator.py::TestIngredientValidator::test_validate_mass_units -v
+./venv/bin/pytest tests/test_ingredient_validator.py::TestIngredientValidator::test_validate_capacity_units -v
 ```
 
 ### Test Structure
 
 - **Unit Tests**: Individual component testing
-- **Integration Tests**: Service interaction testing
+- **Integration Tests**: Service interaction testing  
 - **API Tests**: Endpoint testing with mocked dependencies
 
+### Testing New Units Functionality
+
+The enhanced ingredient validation includes comprehensive tests for all supported units:
+
+```bash
+# Test all ingredient validator functionality
+./venv/bin/pytest tests/test_ingredient_validator.py -v
+
+# Test specific unit types
+./venv/bin/pytest tests/test_ingredient_validator.py::TestIngredientValidator::test_validate_mass_units -v
+./venv/bin/pytest tests/test_ingredient_validator.py::TestIngredientValidator::test_validate_capacity_units -v
+
+# Test unit extraction and categorization
+./venv/bin/pytest tests/test_ingredient_validator.py::TestIngredientValidator::test_get_ingredient_unit -v
+./venv/bin/pytest tests/test_ingredient_validator.py::TestIngredientValidator::test_is_mass_unit -v
+./venv/bin/pytest tests/test_ingredient_validator.py::TestIngredientValidator::test_is_capacity_unit -v
+```
+
+**Test Coverage**: The ingredient validator now includes 19 test methods covering:
+- ✅ Mass unit validation (kg, g, lb, oz, etc.)
+- ✅ Capacity unit validation (l, ml, cups, tbsp, tsp, etc.)
+- ✅ Unit extraction from ingredient strings
+- ✅ Unit type categorization (mass vs capacity)
+- ✅ Long-form unit names (kilogram, tablespoon, etc.)
+- ✅ Invalid format detection
+- ✅ Backward compatibility with existing functionality
+
 ## Development
+
+### Quick Start for Developers
+
+```bash
+# Clone and setup
+git clone <repository-url>
+cd python-recipebot-api
+
+# Setup virtual environment
+python3 -m venv venv
+source venv/bin/activate
+
+# Install dependencies
+pip install -r requirements.txt
+
+# Setup environment
+cp .env.example .env
+# Edit .env and add your OPENROUTER_API_KEY
+
+# Run tests
+./venv/bin/pytest tests/ -v
+
+# Start development server
+./venv/bin/uvicorn app.main:app --reload --host 0.0.0.0 --port 8000
+
+# Test the API
+curl -X POST "http://localhost:8000/api/recipe" \
+     -H "Content-Type: application/json" \
+     -d '{"ingredients": ["2kg pork", "500ml broth", "1 cup rice"]}'
+```
 
 ### Code Quality Standards
 
@@ -370,6 +479,32 @@ The application includes:
    source venv/bin/activate  # Linux/Mac
    # or
    venv\Scripts\activate     # Windows
+   ```
+
+6. **Unit Validation Issues**:
+   ```
+   Invalid ingredient format: 2 pork
+   ```
+   **Solution**: Ensure ingredients include supported units:
+   ```bash
+   # Test supported units
+   ./venv/bin/python3 -c "
+   from app.services.ingredient_validator import IngredientValidator
+   validator = IngredientValidator()
+   units = validator.get_supported_units()
+   print('Supported units:', units)
+   "
+   ```
+
+7. **Server Won't Start**:
+   ```
+   ModuleNotFoundError: No module named 'uvicorn'
+   ```
+   **Solution**: Ensure virtual environment is activated and dependencies are installed:
+   ```bash
+   source venv/bin/activate
+   pip install -r requirements.txt
+   ./venv/bin/uvicorn app.main:app --reload --host 0.0.0.0 --port 8000
    ```
 
 ### Debug Mode

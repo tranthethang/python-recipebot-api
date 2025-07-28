@@ -86,3 +86,86 @@ class TestIngredientValidator:
         oversized_list = ["ingredient"] * 25
         result = self.validator._check_list_size(oversized_list)
         assert result is False
+    
+    def test_validate_mass_units(self):
+        """Test validation with various mass units."""
+        mass_ingredients = [
+            "2kg pork",
+            "500g flour", 
+            "1lb beef",
+            "8oz cheese",
+            "2.5 kilograms potatoes",
+            "100 grams sugar"
+        ]
+        for ingredient in mass_ingredients:
+            result = self.validator._validate_single_ingredient(ingredient)
+            assert result is True, f"Failed to validate mass ingredient: {ingredient}"
+    
+    def test_validate_capacity_units(self):
+        """Test validation with various capacity units."""
+        capacity_ingredients = [
+            "2l milk",
+            "500ml water",
+            "1 cup flour",
+            "2 tbsp oil",
+            "1 tsp salt",
+            "16 fl oz broth",
+            "3 liters stock",
+            "250 milliliters cream"
+        ]
+        for ingredient in capacity_ingredients:
+            result = self.validator._validate_single_ingredient(ingredient)
+            assert result is True, f"Failed to validate capacity ingredient: {ingredient}"
+    
+    def test_get_ingredient_unit(self):
+        """Test unit extraction from ingredients."""
+        test_cases = [
+            ("2kg pork", "kg"),
+            ("500g flour", "g"),
+            ("1 cup milk", "cup"),
+            ("2 tbsp oil", "tbsp"),
+            ("1 tsp salt", "tsp"),
+            ("16 fl oz broth", "fl oz"),
+            ("invalid ingredient", "")
+        ]
+        
+        for ingredient, expected_unit in test_cases:
+            result = self.validator.get_ingredient_unit(ingredient)
+            assert result == expected_unit, f"Expected {expected_unit}, got {result} for {ingredient}"
+    
+    def test_is_mass_unit(self):
+        """Test mass unit identification."""
+        mass_units = ["kg", "g", "lb", "oz", "kilogram", "gram", "pound", "ounce"]
+        for unit in mass_units:
+            assert self.validator.is_mass_unit(unit) is True, f"{unit} should be identified as mass unit"
+        
+        non_mass_units = ["l", "ml", "cup", "tbsp", "tsp"]
+        for unit in non_mass_units:
+            assert self.validator.is_mass_unit(unit) is False, f"{unit} should not be identified as mass unit"
+    
+    def test_is_capacity_unit(self):
+        """Test capacity unit identification."""
+        capacity_units = ["l", "ml", "cup", "tbsp", "tsp", "fl oz", "liter", "milliliter"]
+        for unit in capacity_units:
+            assert self.validator.is_capacity_unit(unit) is True, f"{unit} should be identified as capacity unit"
+        
+        non_capacity_units = ["kg", "g", "lb", "oz"]
+        for unit in non_capacity_units:
+            assert self.validator.is_capacity_unit(unit) is False, f"{unit} should not be identified as capacity unit"
+    
+    def test_get_supported_units(self):
+        """Test getting all supported units."""
+        units = self.validator.get_supported_units()
+        
+        assert "mass_units" in units
+        assert "capacity_units" in units
+        assert isinstance(units["mass_units"], list)
+        assert isinstance(units["capacity_units"], list)
+        assert len(units["mass_units"]) > 0
+        assert len(units["capacity_units"]) > 0
+        
+        # Check that some expected units are present
+        assert "kg" in units["mass_units"]
+        assert "g" in units["mass_units"]
+        assert "l" in units["capacity_units"]
+        assert "ml" in units["capacity_units"]
