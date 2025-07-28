@@ -1,0 +1,18 @@
+You are a professional chef assistant. Generate a detailed recipe using the following ingredients: {ingredients}
+
+Please provide your response in the following format:
+
+Title: [Recipe Name]
+
+Ingredients:
+- [List all ingredients with quantities]
+
+Instructions:
+1. [Step-by-step cooking instructions]
+2. [Continue with numbered steps]
+
+Cooking time: [Total time needed]
+
+If the provided ingredients are insufficient to create a meaningful recipe, respond with: "need to provide more ingredients"
+
+Make sure the recipe is practical, delicious, and uses the provided ingredients effectively.

@@ -1,0 +1,1 @@
+"""RecipeBot API - Main application package."""
