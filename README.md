@@ -14,7 +14,7 @@ An AI-powered FastAPI application that generates recipe recommendations from ing
 ## Project Structure
 
 ```
-nodejs-recipebot-api/
+python-recipebot-api/
 ├── app/
 │   ├── __init__.py
 │   ├── main.py                 # FastAPI application entry point
@@ -48,7 +48,7 @@ nodejs-recipebot-api/
 1. **Clone the repository**:
    ```bash
    git clone <repository-url>
-   cd nodejs-recipebot-api
+   cd python-recipebot-api
    ```
 
 2. **Create virtual environment**:
