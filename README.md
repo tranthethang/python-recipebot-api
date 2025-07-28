@@ -53,12 +53,20 @@ python-recipebot-api/
 
 2. **Create virtual environment**:
    ```bash
+   # Remove any existing virtual environments first
+   rm -rf venv .venv
+   
+   # Create new virtual environment
    python3 -m venv venv
    source venv/bin/activate  # On Windows: venv\Scripts\activate
    ```
 
 3. **Install dependencies**:
    ```bash
+   # Upgrade pip first
+   pip install --upgrade pip
+   
+   # Install dependencies
    pip install -r requirements.txt
    ```
 
@@ -67,6 +75,53 @@ python-recipebot-api/
    cp .env.example .env
    # Edit .env and add your OpenRouter API key
    ```
+
+### Troubleshooting Installation
+
+If you encounter issues during installation:
+
+#### Issue 1: "bad interpreter" or wrong path errors
+```bash
+# Solution: Remove and recreate virtual environment
+rm -rf venv .venv
+python3 -m venv venv
+source venv/bin/activate
+pip install --upgrade pip
+pip install -r requirements.txt
+```
+
+#### Issue 2: "externally-managed-environment" error
+```bash
+# Solution 1: Use virtual environment (recommended)
+python3 -m venv venv
+source venv/bin/activate
+pip install -r requirements.txt
+
+# Solution 2: Use --break-system-packages (not recommended for production)
+pip install -r requirements.txt --break-system-packages
+
+# Solution 3: Install using pipx (if available)
+pipx install -r requirements.txt
+```
+
+#### Issue 3: Permission errors
+```bash
+# Make sure you're in the virtual environment
+source venv/bin/activate
+# Then install with user flag if needed
+pip install --user -r requirements.txt
+```
+
+#### Issue 4: Python version compatibility
+```bash
+# Check Python version (requires Python 3.8+)
+python3 --version
+
+# If you have multiple Python versions, specify the version
+python3.11 -m venv venv  # or python3.10, python3.12, etc.
+source venv/bin/activate
+pip install -r requirements.txt
+```
 
 ## Configuration
 
@@ -281,23 +336,41 @@ The application includes:
 
 ### Common Issues
 
-1. **OpenRouter API Key Error**:
+1. **Installation Issues**:
+   ```
+   zsh: bad interpreter: no such file or directory
+   error: externally-managed-environment
+   ```
+   **Solution**: See the "Troubleshooting Installation" section above
+
+2. **OpenRouter API Key Error**:
    ```
    ValueError: OPENROUTER_API_KEY environment variable not set
    ```
    **Solution**: Set the `OPENROUTER_API_KEY` environment variable
 
-2. **Import Errors**:
+3. **Import Errors**:
    ```
    ModuleNotFoundError: No module named 'app'
    ```
-   **Solution**: Run from project root directory
+   **Solution**: Run from project root directory and ensure virtual environment is activated
 
-3. **Test Failures**:
+4. **Test Failures**:
    ```
    Failed: async def functions are not natively supported
    ```
    **Solution**: Ensure `pytest-asyncio` is installed
+
+5. **Virtual Environment Issues**:
+   ```
+   Command 'python' not found, or 'pip' not found
+   ```
+   **Solution**: Ensure virtual environment is activated:
+   ```bash
+   source venv/bin/activate  # Linux/Mac
+   # or
+   venv\Scripts\activate     # Windows
+   ```
 
 ### Debug Mode
 
