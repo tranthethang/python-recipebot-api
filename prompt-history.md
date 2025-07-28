@@ -44,3 +44,5 @@ From the TECHNICAL_DOCS.md document - business description, and the CODING_CONVE
 Create a more detailed document to:
 - list each step for coding,
 - all unit-test cases.
+
+### Prompt 8
