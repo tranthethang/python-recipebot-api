@@ -1,0 +1,23 @@
+{
+  "title": "Ginger-Glazed Chicken Thighs with Roasted Carrots & Mushrooms",
+  "ingredients": [
+    "1.5kg Chicken Thighs (bone-in, skin-on preferred for flavour, but boneless/skinless can be used - adjust cooking time accordingly)",
+    "0.5kg Carrots (peeled and cut into chunks)",
+    "0.3kg Mushrooms (Chestnut or Button mushrooms work well, quartered)",
+    "3 tbsp Fresh Ginger (grated)",
+    "2 tbsp Soy Sauce",
+    "2 tbsp Honey",
+    "2 tbsp Olive Oil",
+    "Salt and Black Pepper to taste"
+  ],
+  "instructions": [
+    "Preheat your oven to 200°C (180°C fan). Pat the chicken thighs dry and season generously with salt and pepper.",
+    "In a small bowl, whisk together grated ginger, soy sauce, honey, and 1 tablespoon of olive oil to create the glaze.",
+    "Heat the remaining olive oil in a large oven-safe skillet over medium-high heat. Sear the chicken thighs skin-side down for 4-5 minutes until golden brown, then flip and cook for another 2 minutes.",
+    "Remove chicken from the skillet and set aside. Add carrots and mushrooms to the same skillet, season with salt and pepper, and cook for 3-4 minutes.",
+    "Return the chicken to the skillet, brush with half of the ginger glaze, and transfer to the preheated oven.",
+    "Roast for 25-30 minutes, brushing with remaining glaze halfway through, until chicken reaches internal temperature of 75°C and vegetables are tender.",
+    "Let rest for 5 minutes before serving. Serve hot with the roasted vegetables."
+  ],
+  "cooking_time": "45 minutes"
+}

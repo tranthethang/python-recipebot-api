@@ -203,3 +203,115 @@ class TestRecipeGenerator:
         result = generator._extract_cooking_time(content)
         
         assert result == "30 minutes"
+    
+    @patch.dict('os.environ', {'OPENROUTER_API_KEY': 'test-key'})
+    @patch('builtins.open', mock_open(read_data="Template {ingredients}"))
+    def test_parse_ai_response_json_success(self):
+        """Test parsing AI response in JSON format."""
+        generator = RecipeGenerator()
+        json_content = '''
+        {
+            "title": "Test Recipe",
+            "ingredients": ["1kg chicken", "2 cups rice"],
+            "instructions": ["Cook chicken", "Add rice"],
+            "cooking_time": "30 minutes"
+        }
+        '''
+        
+        result = generator._parse_ai_response(json_content)
+        
+        assert result is not None
+        assert result["title"] == "Test Recipe"
+        assert result["ingredients"] == ["1kg chicken", "2 cups rice"]
+        assert result["instructions"] == ["Cook chicken", "Add rice"]
+        assert result["cooking_time"] == "30 minutes"
+    
+    @patch.dict('os.environ', {'OPENROUTER_API_KEY': 'test-key'})
+    @patch('builtins.open', mock_open(read_data="Template {ingredients}"))
+    def test_parse_ai_response_json_error(self):
+        """Test parsing AI response with JSON error format."""
+        generator = RecipeGenerator()
+        json_content = '{"error": "need to provide more ingredients"}'
+        
+        result = generator._parse_ai_response(json_content)
+        
+        assert result is None
+    
+    @patch.dict('os.environ', {'OPENROUTER_API_KEY': 'test-key'})
+    @patch('builtins.open', mock_open(read_data="Template {ingredients}"))
+    def test_parse_ai_response_json_with_markdown_blocks(self):
+        """Test parsing AI response with JSON wrapped in markdown code blocks."""
+        generator = RecipeGenerator()
+        markdown_content = '''```json
+{
+  "title": "Ginger-Glazed Chicken Thighs with Roasted Vegetables",
+  "ingredients": [
+    "1.5kg chicken thighs, bone-in, skin-on",
+    "0.1kg mushrooms, sliced (cremini or button)",
+    "0.3kg carrots, peeled and chopped into 1-inch pieces",
+    "0.2kg ginger, peeled and grated"
+  ],
+  "instructions": [
+    "Preheat oven to 200°C (400°F).",
+    "In a bowl, whisk together grated ginger, soy sauce, honey, rice vinegar, sesame oil, black pepper, and red pepper flakes (if using).",
+    "Marinate chicken thighs in the ginger mixture for at least 20 minutes.",
+    "In a large roasting pan, toss carrots and mushrooms with 1 tbsp vegetable oil and minced garlic.",
+    "Place marinated chicken thighs on top of the vegetables in the roasting pan.",
+    "Roast for 35-40 minutes, or until chicken is cooked through.",
+    "Let rest for 5 minutes before serving."
+  ],
+  "cooking_time": "45 minutes"
+}
+```'''
+        
+        result = generator._parse_ai_response(markdown_content)
+        
+        assert result is not None
+        assert result["title"] == "Ginger-Glazed Chicken Thighs with Roasted Vegetables"
+        assert len(result["ingredients"]) == 4
+        assert "1.5kg chicken thighs, bone-in, skin-on" in result["ingredients"]
+        assert len(result["instructions"]) == 7
+        assert "Preheat oven to 200°C (400°F)." in result["instructions"]
+        assert result["cooking_time"] == "45 minutes"
+    
+    @patch.dict('os.environ', {'OPENROUTER_API_KEY': 'test-key'})
+    @patch('builtins.open', mock_open(read_data="Template {ingredients}"))
+    def test_parse_ai_response_json_incomplete(self):
+        """Test parsing AI response with incomplete JSON."""
+        generator = RecipeGenerator()
+        json_content = '{"title": "Test Recipe", "ingredients": ["1kg chicken"]}'  # Missing instructions and cooking_time
+        
+        result = generator._parse_ai_response(json_content)
+        
+        # Should fall back to text parsing, which will return default values since the JSON doesn't contain proper text format
+        assert result is not None
+        assert result["title"] == "Generated Recipe"  # Default title when text parsing can't find a proper title
+        assert result["ingredients"] == ["Ingredients not specified"]  # Default when text parsing fails
+        assert result["instructions"] == ["Instructions not provided"]  # Default when text parsing fails
+        assert result["cooking_time"] == "30 minutes"  # Default cooking time
+    
+    @patch.dict('os.environ', {'OPENROUTER_API_KEY': 'test-key'})
+    @patch('builtins.open', mock_open(read_data="Template {ingredients}"))
+    def test_parse_ai_response_fallback_to_text(self):
+        """Test parsing AI response falls back to text parsing when JSON fails."""
+        generator = RecipeGenerator()
+        text_content = """
+        Title: Fallback Recipe
+        
+        Ingredients:
+        - 1kg chicken
+        - 2 cups rice
+        
+        Instructions:
+        1. Cook chicken
+        2. Add rice
+        
+        Cooking time: 45 minutes
+        """
+        
+        result = generator._parse_ai_response(text_content)
+        
+        assert result is not None
+        assert result["title"] == "Fallback Recipe"
+        assert "1kg chicken" in result["ingredients"]
+        assert "2 cups rice" in result["ingredients"]

@@ -52,6 +52,31 @@ class RecipeGenerator:
     def _parse_ai_response(self, ai_content: str) -> Optional[Dict[str, Any]]:
         """Parse AI response content into recipe dictionary."""
         try:
+            # First try to parse as JSON (new format)
+            try:
+                # Extract JSON from markdown code blocks if present
+                json_content = self._extract_json_from_markdown(ai_content)
+                json_data = json.loads(json_content.strip())
+                
+                # Check if it's an error response
+                if "error" in json_data:
+                    if json_data["error"] == "need to provide more ingredients":
+                        return None
+                    else:
+                        logger.error(f"AI returned error: {json_data['error']}")
+                        return None
+                
+                # Validate that all required fields are present
+                required_fields = ["title", "ingredients", "instructions", "cooking_time"]
+                if all(field in json_data for field in required_fields):
+                    return json_data
+                else:
+                    logger.warning("JSON response missing required fields, falling back to text parsing")
+                    
+            except json.JSONDecodeError:
+                logger.info("Response is not JSON, attempting text parsing")
+            
+            # Fallback to text parsing for backward compatibility
             if ai_content.strip().lower().startswith("need to provide more ingredients"):
                 return None
             
@@ -61,6 +86,18 @@ class RecipeGenerator:
         except Exception as e:
             logger.error(f"Failed to parse AI response: {str(e)}")
             return None
+    
+    def _extract_json_from_markdown(self, content: str) -> str:
+        """Extract JSON content from markdown code blocks."""
+        # Look for JSON wrapped in markdown code blocks
+        json_pattern = r'```(?:json)?\s*\n?(.*?)\n?```'
+        match = re.search(json_pattern, content, re.DOTALL | re.IGNORECASE)
+        
+        if match:
+            return match.group(1).strip()
+        
+        # If no code blocks found, return the original content
+        return content.strip()
     
     def _extract_recipe_data(self, content: str) -> Dict[str, Any]:
         """Extract structured recipe data from AI response."""
