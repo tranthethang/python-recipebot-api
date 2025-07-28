@@ -4,6 +4,14 @@ import aiohttp
 import asyncio
 from app.utils.logger_config import get_logger
 
+# Load environment variables if not in test environment
+if not os.getenv('PYTEST_CURRENT_TEST'):
+    try:
+        from dotenv import load_dotenv
+        load_dotenv()
+    except ImportError:
+        pass
+
 logger = get_logger(__name__)
 
 

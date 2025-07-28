@@ -1,5 +1,5 @@
 from typing import Dict, Any
-from fastapi import APIRouter, Depends
+from fastapi import APIRouter, Depends, HTTPException
 from app.models.recipe_models import RecipeRequest, RecipeResponse
 from app.services.recipe_generator import RecipeGenerator
 from app.utils.response_formatter import ResponseFormatter
@@ -43,6 +43,9 @@ async def generate_recipe(
         else:
             raise ResponseFormatter.format_error_response(result["message"], 400)
             
+    except HTTPException:
+        # Re-raise HTTPExceptions (like the 400 error above) without modification
+        raise
     except Exception as e:
         logger.error(f"Recipe generation endpoint error: {str(e)}")
         raise ResponseFormatter.format_server_error(
